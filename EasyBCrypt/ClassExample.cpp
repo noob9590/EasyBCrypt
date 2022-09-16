@@ -103,7 +103,7 @@ AESCipher::AESCipher(std::vector<BYTE> key, const std::wstring& chainingMode)
 
 	IV = std::move(*optIV);
 
-	auto optPbBlob = EasyBCrypt::GenerateKeyBlob(hAlg, dKey, BCRYPT_CHAIN_MODE_CBC);
+	auto optPbBlob = EasyBCrypt::GenerateKeyBlob(hAlg, dKey, chainingMode);
 	if (not optPbBlob)
 	{
 		BCryptCloseAlgorithmProvider(hAlg, 0);
@@ -112,6 +112,9 @@ AESCipher::AESCipher(std::vector<BYTE> key, const std::wstring& chainingMode)
 	}
 
 	pbBlob = std::move(*optPbBlob);
+
+	if (chainingMode == BCRYPT_CHAIN_MODE_CCM or chainingMode == BCRYPT_CHAIN_MODE_GCM)
+		usePadding = false;
 
 	BCryptCloseAlgorithmProvider(hKdf, 0);
 
@@ -130,7 +133,7 @@ void AESCipher::SetIV(std::vector<BYTE>& IV)
 
 std::string AESCipher::Encrypt64(const std::string& plaintText)
 {
-	auto optEncryption64 = EasyBCrypt::Encrypt64(hAlg, pbBlob, IV, plaintText);
+	auto optEncryption64 = EasyBCrypt::Encrypt64(hAlg, pbBlob, IV, plaintText, usePadding);
 	if (not optEncryption64)
 		return "";
 	return optEncryption64.value();
@@ -139,7 +142,7 @@ std::string AESCipher::Encrypt64(const std::string& plaintText)
 
 std::string AESCipher::Decrypt64(const std::string& cipherText)
 {
-	auto optDecryption64 = EasyBCrypt::Decrypt64(hAlg, pbBlob, IV, cipherText);
+	auto optDecryption64 = EasyBCrypt::Decrypt64(hAlg, pbBlob, IV, cipherText, usePadding);
 	if (not optDecryption64)
 		return "";
 	return optDecryption64.value();
