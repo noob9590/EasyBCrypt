@@ -172,24 +172,24 @@ int main()
 
 
 
-	//// decrypt data
-	//auto optDeciphertext = EasyBCrypt::Decrypt(hAlg, pbBlob, IV, ciphertext);
-	//if (not optDeciphertext)
-	//{
-	//	std::cout << "[-] Failed to decrypt the cipher. Exiting..." << std::endl;
-	//	epilouge(hAlg, hKdf);
-	//	ExitProcess(1);
-	//}
+	// decrypt data
+	auto optDeciphertext = EasyBCrypt::Decrypt(hAlg, pbBlob, IV, ciphertext);
+	if (not optDeciphertext)
+	{
+		std::cout << "[-] Failed to decrypt the cipher. Exiting..." << std::endl;
+		epilouge(hAlg, hKdf);
+		ExitProcess(1);
+	}
 
-	//decipherText = std::move(*optDeciphertext);
+	decipherText = std::move(*optDeciphertext);
 
-	//std::cout << "\n[+] Plaintext: " << std::endl;
+	std::cout << "\n[+] Plaintext: " << std::endl;
 
-	//Print(decipherText.data(), decipherText.size());
+	Print(decipherText.data(), decipherText.size());
 
-	//if (decipherText == plaintext)
-	//	std::cout << "\nSuccess : Plaintext has been encrypted, ciphertext has been decrypted with AES-128 bit key" << std::endl;
-	//else
-	//	std::cout << "\nFailed : Plaintext has been encrypted, ciphertext could not have been decrypted." << std::endl;
+	if (decipherText == plaintext)
+		std::cout << "\nSuccess : Plaintext has been encrypted, ciphertext has been decrypted with AES-128 bit key" << std::endl;
+	else
+		std::cout << "\nFailed : Plaintext has been encrypted, ciphertext could not have been decrypted." << std::endl;
 
 }
