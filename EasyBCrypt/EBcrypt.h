@@ -29,7 +29,8 @@ namespace EasyBCrypt
 
 	inline void ReportError(_In_ DWORD dwErrCode)
 	{
-		wprintf(L"Error: 0x%08x (%d)\n", dwErrCode, dwErrCode);
+		if (not NT_SUCCESS(dwErrCode))
+			wprintf(L"Error: 0x%08x (%d)\n", dwErrCode, dwErrCode);
 	}
 
 	optional<vector<BYTE>> Hash(PBYTE bytes, DWORD dwSize);

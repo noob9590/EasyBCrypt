@@ -33,29 +33,35 @@ void Print(IN char* pbPrintData,
 	std::cout << std::endl;
 }
 
+void epilouge(BCRYPT_ALG_HANDLE hAlg, BCRYPT_ALG_HANDLE hKdf)
+{
+	BCryptCloseAlgorithmProvider(hAlg, 0);
+	BCryptCloseAlgorithmProvider(hKdf, 0);
+}
+
 int main()
 {
-	// plaintext
+	//plaintext
 	std::string plaintext = "CanYouReadIt???CanYouReadIt???CanYouReadIt???";
 
-	// handles
+	//handles
 	BCRYPT_ALG_HANDLE hAlg;
 	BCRYPT_ALG_HANDLE hKdf;
 
-	// key
+	//key
 	std::vector<BYTE> key = 
 	{
 		0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
 		0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F 
 	};
 
-	// salt
+	//salt
 	BYTE Salt[] =
 	{
 		0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88,
 	};
 
-	// number of iteration for the kdf algorithem
+	//number of iteration for the kdf algorithm
 	ULONGLONG IterationCount = 1024;
 
 	// PBKDF2 parameters
@@ -111,6 +117,7 @@ int main()
 	)))
 	{
 		std::cout << "Error returned by BCryptOpenAlgorithmProvider" << std::endl;
+		BCryptCloseAlgorithmProvider(hAlg, 0);
 		ExitProcess(1);
 	}
 
@@ -120,10 +127,11 @@ int main()
 	if (not optDerivedKey)
 	{
 		std::cout << "Failed to key from PBKDF2. Exiting..." << std::endl;
+		epilouge(hAlg, hKdf);
 		ExitProcess(1);
 	}
 	
-	dKey = optDerivedKey.value();
+	dKey = std::move(*optDerivedKey);
 
 
 	std::vector<BYTE> pbBlob;
@@ -131,30 +139,32 @@ int main()
 	if (not optPbBlob)
 	{
 		std::cout << "[-] Failed to generate symmetric key. Exiting..." << std::endl;
+		epilouge(hAlg, hKdf);
 		ExitProcess(1);
 	}
 
-	pbBlob = optPbBlob.value();
+	pbBlob = std::move(*optPbBlob);
 
 
 	auto optIV = EasyBCrypt::GenerateIV(hAlg);
 	if (not optIV)
 	{
 		std::cout << "[-] Failed to generate IV. Exiting..." << std::endl;
+		epilouge(hAlg, hKdf);
 		ExitProcess(1);
 	}
 
-	IV = optIV.value();
-
+	IV = std::move(*optIV);
 
 	auto optCiphertext = EasyBCrypt::Encrypt(hAlg, pbBlob, IV, plaintext);
 	if (not optCiphertext)
 	{
 		std::cout << "[-] Failed to generate ciphertext. Exiting..." << std::endl;
+		epilouge(hAlg, hKdf);
 		ExitProcess(1);
 	}
 
-	ciphertext = optCiphertext.value();
+	ciphertext = std::move(*optCiphertext);
 
 	std::cout << "\n[+] Ciphertext: " << std::endl;
 
@@ -162,27 +172,24 @@ int main()
 
 
 
-	// decrypt data
-	auto optDeciphertext = EasyBCrypt::Decrypt(hAlg, pbBlob, IV, ciphertext);
-	if (not optDeciphertext)
-	{
-		std::cout << "[-] Failed to decrypt the cipher. Exiting..." << std::endl;
-		ExitProcess(1);
-	}
+	//// decrypt data
+	//auto optDeciphertext = EasyBCrypt::Decrypt(hAlg, pbBlob, IV, ciphertext);
+	//if (not optDeciphertext)
+	//{
+	//	std::cout << "[-] Failed to decrypt the cipher. Exiting..." << std::endl;
+	//	epilouge(hAlg, hKdf);
+	//	ExitProcess(1);
+	//}
 
-	decipherText = optDeciphertext.value();
+	//decipherText = std::move(*optDeciphertext);
 
-	std::cout << "\n[+] Plaintext: " << std::endl;
+	//std::cout << "\n[+] Plaintext: " << std::endl;
 
-	Print(decipherText.data(), decipherText.size());
+	//Print(decipherText.data(), decipherText.size());
 
-	if (decipherText == plaintext)
-		std::cout << "\nSuccess : Plaintext has been encrypted, ciphertext has been decrypted with AES-128 bit key" << std::endl;
-	else
-		std::cout << "\nFailed : Plaintext has been encrypted, ciphertext could not have been decrypted." << std::endl;
-
-	//cleanup
-	BCryptCloseAlgorithmProvider(hAlg, 0);
-	BCryptCloseAlgorithmProvider(hKdf, 0);
+	//if (decipherText == plaintext)
+	//	std::cout << "\nSuccess : Plaintext has been encrypted, ciphertext has been decrypted with AES-128 bit key" << std::endl;
+	//else
+	//	std::cout << "\nFailed : Plaintext has been encrypted, ciphertext could not have been decrypted." << std::endl;
 
 }

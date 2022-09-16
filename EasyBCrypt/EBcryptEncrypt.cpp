@@ -194,6 +194,7 @@ std::optional<std::vector<BYTE>> EasyBCrypt::GenerateKeyBlob(BCRYPT_ALG_HANDLE h
 	if (not NT_SUCCESS(status))
 	{
 		ReportError(status);
+		BCryptDestroyKey(hKey);
 		return std::nullopt;
 	}
 		
@@ -211,6 +212,7 @@ std::optional<std::vector<BYTE>> EasyBCrypt::GenerateKeyBlob(BCRYPT_ALG_HANDLE h
 	if (not NT_SUCCESS(status))
 	{
 		ReportError(status);
+		BCryptDestroyKey(hKey);
 		return std::nullopt;
 	}
 		
@@ -229,6 +231,7 @@ std::optional<std::vector<BYTE>> EasyBCrypt::GenerateKeyBlob(BCRYPT_ALG_HANDLE h
 	if (not NT_SUCCESS(status))
 	{
 		ReportError(status);
+		BCryptDestroyKey(hKey);
 		return std::nullopt;
 	}
 		
@@ -279,6 +282,7 @@ std::optional<std::vector<BYTE>> EasyBCrypt::Encrypt(BCRYPT_ALG_HANDLE hAlg, con
 	if (not NT_SUCCESS(status))
 	{
 		ReportError(status);
+		BCryptDestroyKey(hKey);
 		return std::nullopt;
 	}
 
@@ -297,6 +301,7 @@ std::optional<std::vector<BYTE>> EasyBCrypt::Encrypt(BCRYPT_ALG_HANDLE hAlg, con
 	if (not NT_SUCCESS(status))
 	{
 		ReportError(status);
+		BCryptDestroyKey(hKey);
 		return nullopt;
 	}
 		
@@ -318,10 +323,17 @@ std::optional<std::vector<BYTE>> EasyBCrypt::Encrypt(BCRYPT_ALG_HANDLE hAlg, con
 	if (not NT_SUCCESS(status))
 	{
 		ReportError(status);
+		BCryptDestroyKey(hKey);
 		return nullopt;
 	}
 		
-	BCryptDestroyKey(hKey);
+	status = BCryptDestroyKey(hKey);
+
+	if (not NT_SUCCESS(status))
+	{
+		ReportError(status);
+		return nullopt;
+	}
 
 	return enc;
 }
@@ -372,6 +384,7 @@ std::optional<std::string> EasyBCrypt::Decrypt(BCRYPT_ALG_HANDLE hAlg, const std
 	if (not NT_SUCCESS(status))
 	{
 		ReportError(status);
+		BCryptDestroyKey(hKey);
 		return nullopt;
 	}
 		
@@ -397,6 +410,7 @@ std::optional<std::string> EasyBCrypt::Decrypt(BCRYPT_ALG_HANDLE hAlg, const std
 		else
 		{
 			ReportError(status);
+			BCryptDestroyKey(hKey);
 			return nullopt;
 		}
 	}
@@ -474,6 +488,7 @@ std::optional<EasyBCrypt::derived_key> EasyBCrypt::KeyFromDerivation(BCRYPT_ALG_
 	if (not NT_SUCCESS(status))
 	{
 		ReportError(status);
+		BCryptDestroyKey(hKey);
 		return std::nullopt;
 	}
 
