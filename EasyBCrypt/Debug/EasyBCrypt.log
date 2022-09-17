@@ -1,7 +1,0 @@
-﻿  ClassExample.cpp
-  Example.cpp
-  Generating Code...
-ClassExample.obj : error LNK2005: "void __cdecl Print(char *,unsigned long)" (?Print@@YAXPADK@Z) already defined in Example.obj
-ClassExample.obj : error LNK2005: "void __cdecl PrintBytes(unsigned char *,unsigned long)" (?PrintBytes@@YAXPAEK@Z) already defined in Example.obj
-ClassExample.obj : error LNK2005: _main already defined in Example.obj
-C:\Users\Homie\source\repos\EasyBCrypt\Debug\EasyBCrypt.exe : fatal error LNK1169: one or more multiply defined symbols found
