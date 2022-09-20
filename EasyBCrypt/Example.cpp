@@ -1,5 +1,5 @@
 #include <iostream>
-#include "EBcrypt.h"
+#include "EasyBCrypt.h"
 #include <fstream>
 #include <sstream>
 

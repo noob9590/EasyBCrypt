@@ -1,4 +1,4 @@
-#include "EBcrypt.h"
+#include "EasyBCrypt.h"
 
 std::optional<std::vector<BYTE>> EasyBCrypt::Hash(PBYTE bytes, DWORD dwSize)
 {
@@ -120,34 +120,50 @@ std::optional<std::vector<BYTE>> EasyBCrypt::Hash(const string& str)
 	return optHash.value();
 }
 
-std::optional<std::vector<BYTE> > EasyBCrypt::GenerateIV(BCRYPT_ALG_HANDLE hAlg)
+std::optional<std::vector<BYTE> > EasyBCrypt::GenerateIV(BCRYPT_ALG_HANDLE hAlg, DWORD IVSize /* = -1 */)
 {
 	NTSTATUS status;
-	DWORD blockLength;
+	DWORD IVSize;
 	DWORD res;
 	std::vector<BYTE> IV;
+	std::wstring mode(32, 0);
 
 	status = BCryptGetProperty(
-		hAlg,										// Handle to a CNG object
-		BCRYPT_BLOCK_LENGTH,						// Property name (null terminated unicode string)
-		reinterpret_cast<PBYTE>( & blockLength),    // Addr of the output buffer which receives the property value
-		sizeof(blockLength),						// Size of the buffer in the bytes
-		&res,										// Number of bytes that were copied into the buffer
-		0);											// Flags
+		hAlg,
+		BCRYPT_CHAINING_MODE,
+		reinterpret_cast<PBYTE>(mode.data()),
+		(mode.size() + 1) * sizeof(wchar_t),
+		&res,
+		0);
 
 	if (not NT_SUCCESS(status))
 	{
 		ReportError(status);
 		return nullopt;
 	}
-		
 
-	IV.resize(blockLength);
+	if (IVSize == -1)
+		if (wcscmp(mode.c_str(), BCRYPT_CHAIN_MODE_CBC) == 0 or \
+			wcscmp(mode.c_str(), BCRYPT_CHAIN_MODE_CFB) == 0)
+		{
+			IVSize = 16;
+		}
+		else if (wcscmp(mode.c_str(), BCRYPT_CHAIN_MODE_GCM) == 0 or \
+			wcscmp(mode.c_str(), BCRYPT_CHAIN_MODE_CCM) == 0)
+		{
+			IVSize = 12;
+		}
+		else
+		{
+			IVSize = 0;
+		}
+
+	IV.resize(IVSize);
 
 	status = BCryptGenRandom(
 		NULL,										// Alg Handle pointer; If NULL, the default provider is chosen
 		reinterpret_cast<PBYTE>(IV.data()),         // Address of the buffer that receives the random number(s)
-		blockLength,								// Size of the buffer in bytes
+		IVSize,								// Size of the buffer in bytes
 		BCRYPT_USE_SYSTEM_PREFERRED_RNG);			// Flags 
 
 	if (not NT_SUCCESS(status))

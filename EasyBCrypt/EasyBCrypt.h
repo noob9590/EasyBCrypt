@@ -36,7 +36,7 @@ namespace EasyBCrypt
 	optional<vector<BYTE>> Hash(PBYTE bytes, DWORD dwSize);
 	optional<vector<BYTE>> Hash(const string& str);
 
-	optional<std::vector<BYTE> >GenerateIV(BCRYPT_ALG_HANDLE hAlg);
+	optional<std::vector<BYTE> >GenerateIV(BCRYPT_ALG_HANDLE hAlg, DWORD IVSize = -1);
 	optional<derived_key> KeyFromDerivation(BCRYPT_ALG_HANDLE KdfAlgHandle, const std::vector<BYTE>& key, BCryptBufferDesc kdfParameters, size_t aesRounds = 128);
     optional<std::vector<BYTE>> GenerateKeyBlob(BCRYPT_ALG_HANDLE hAlg, const std::vector<BYTE>& key, const std::wstring& chainingMode);
 
