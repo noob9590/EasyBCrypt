@@ -124,14 +124,14 @@ namespace EasyBCrypt
 
 	std::variant<STATUS, std::vector<BYTE>> EasyBCrypt::GenerateRandomBytes(size_t sz)
 	{
-		NTSTATUS		  nt_status = STATUS_UNSUCCESSFUL;
+		NTSTATUS nt_status = STATUS_UNSUCCESSFUL;
 		std::vector<BYTE> rndBytes(sz);
 
 		nt_status = BCryptGenRandom(
-			NULL,											// Alg Handle pointer; If NULL, the default provider is chosen
-			reinterpret_cast<PBYTE>(&rndBytes[0]),         // Address of the buffer that receives the random number(s)
-			sz,											   // Size of the buffer in bytes
-			BCRYPT_USE_SYSTEM_PREFERRED_RNG);			   // Flags 
+			NULL,                                  // Alg Handle pointer; If NULL, the default provider is chosen
+			reinterpret_cast<PBYTE>(&rndBytes[0]), // Address of the buffer that receives the random number(s)
+			sz,                                    // Size of the buffer in bytes
+			BCRYPT_USE_SYSTEM_PREFERRED_RNG);      // Flags 
 
 		if (not NT_SUCCESS(nt_status))
 			return std::make_shared<std::string>(std::format("GenerateRandomBytes: error returned from BCryptGenRandom. NTSATUS code: {:#x}", static_cast<unsigned long>(nt_status)));
@@ -141,20 +141,21 @@ namespace EasyBCrypt
 
 	std::variant<STATUS, std::vector<BYTE>> EasyBCrypt::KeyFromDerivation(BCRYPT_ALG_HANDLE KdfAlgHandle, const std::vector<BYTE>& key, PBCryptBufferDesc kdfParameters, WORD rounds /*= 128*/)
 	{
-		NTSTATUS		  nt_status = STATUS_UNSUCCESSFUL;
-		STATUS			  err = std::make_shared<std::string>();
+		STATUS err = std::make_shared<std::string>();
+		NTSTATUS nt_status = STATUS_UNSUCCESSFUL;
+
 		BCRYPT_KEY_HANDLE hKey = NULL;
-		ULONG			  ResultLength = 0;
+		ULONG ResultLength = 0;
 		std::vector<BYTE> dKey;
 
 		nt_status = BCryptGenerateSymmetricKey(
-			KdfAlgHandle,														// Algorithm Handle 
-			&hKey,																// A pointer to a key handle
-			NULL,																// Buffer that recieves the key object;NULL implies memory is allocated and freed by the function
-			0,																	// Size of the buffer in bytes
-			reinterpret_cast<PBYTE>(const_cast<unsigned char*>(&key[0])),		// Buffer that contains the key material
-			static_cast<ULONG>(key.size()),										// Size of the buffer in bytes
-			0);																	// Flags
+			KdfAlgHandle,                                                 // Algorithm Handle 
+			&hKey,                                                        // A pointer to a key handle
+			NULL,                                                         // Buffer that recieves the key object;NULL implies memory is allocated and freed by the function
+			0,                                                            // Size of the buffer in bytes
+			reinterpret_cast<PBYTE>(const_cast<unsigned char*>(&key[0])), // Buffer that contains the key material
+			static_cast<ULONG>(key.size()),                               // Size of the buffer in bytes
+			0);                                                           // Flags
 
 		if (not NT_SUCCESS(nt_status))
 		{
@@ -170,12 +171,12 @@ namespace EasyBCrypt
 		dKey.resize(rounds / 8);
 
 		nt_status = BCryptKeyDerivation(
-			hKey,											// Handle to the password key
-			kdfParameters,									// Parameters to the KDF algorithm
-			reinterpret_cast<PBYTE>(dKey.data()),			// Address of the buffer which receives the derived bytes
-			static_cast<ULONG>(dKey.size()),				// Size of the buffer in bytes
-			&ResultLength,									// Variable that receives number of bytes copied to above buffer  
-			0);												// Flags
+			hKey,                                 // Handle to the password key
+			kdfParameters,                        // Parameters to the KDF algorithm
+			reinterpret_cast<PBYTE>(dKey.data()), // Address of the buffer which receives the derived bytes
+			static_cast<ULONG>(dKey.size()),      // Size of the buffer in bytes
+			&ResultLength,                        // Variable that receives number of bytes copied to above buffer  
+			0);                                   // Flags
 
 		if (not NT_SUCCESS(nt_status))
 		{
@@ -199,9 +200,10 @@ namespace EasyBCrypt
 
 	std::variant<STATUS, std::vector<BYTE>> EasyBCrypt::CreateSymmetricKeyBlob(BCRYPT_ALG_HANDLE hAlg, const std::vector<BYTE>& key, ChaningMode mode)
 	{
-		STATUS			  err		= std::make_shared<std::string>();
-		NTSTATUS		  nt_status = STATUS_UNSUCCESSFUL;
-		BCRYPT_KEY_HANDLE hKey		= NULL;
+		STATUS err = std::make_shared<std::string>();
+		NTSTATUS nt_status = STATUS_UNSUCCESSFUL;
+
+		BCRYPT_KEY_HANDLE hKey = NULL;
 		DWORD			  cbBlob = 0;
 		std::vector<BYTE> pbBlob;
 		std::wstring chainingMode;
@@ -224,11 +226,11 @@ namespace EasyBCrypt
 			chainingMode = BCRYPT_CHAIN_MODE_NA;
 
 		nt_status = BCryptSetProperty(
-			hAlg,																// Handle to a CNG object          
-			BCRYPT_CHAINING_MODE,												// Property name(null terminated unicode string)
-			reinterpret_cast<PBYTE>(const_cast<wchar_t*>(chainingMode.data())),	// Address of the buffer that contains the new property value 
-			static_cast<DWORD>((chainingMode.size() + 1) * sizeof(wchar_t)),													// Size of the buffer in bytes
-			0);																	// Flags
+			hAlg,                                                               // Handle to a CNG object          
+			BCRYPT_CHAINING_MODE,                                               // Property name(null terminated unicode string)
+			reinterpret_cast<PBYTE>(const_cast<wchar_t*>(chainingMode.data())), // Address of the buffer that contains the new property value 
+			static_cast<DWORD>((chainingMode.size() + 1) * sizeof(wchar_t)),    // Size of the buffer in bytes
+			0);                                                                 // Flags
 
 		if (not NT_SUCCESS(nt_status))
 		{
@@ -238,13 +240,13 @@ namespace EasyBCrypt
 			
 
 		nt_status = BCryptGenerateSymmetricKey(
-			hAlg,											// Algorithm provider handle
-			&hKey,											// A pointer to key handle
-			NULL,											// A pointer to the buffer that recieves the key object;NULL implies memory is allocated and freed by the function
-			0,												// Size of the buffer in bytes
-			_key,											// A pointer to a buffer that contains the key material
-			_keySIze,										// Size of the buffer in bytes
-			0);												// Flags
+			hAlg,      // Algorithm provider handle
+			&hKey,     // A pointer to key handle
+			NULL,      // A pointer to the buffer that recieves the key object;NULL implies memory is allocated and freed by the function
+			0,         // Size of the buffer in bytes
+			_key,      // A pointer to a buffer that contains the key material
+			_keySIze,  // Size of the buffer in bytes
+			0);        // Flags
 
 		if (not NT_SUCCESS(nt_status))
 		{
@@ -296,9 +298,9 @@ namespace EasyBCrypt
 
 	std::variant<STATUS, std::vector<BYTE>> EasyBCrypt::CreateAESKeyBlob(BCRYPT_ALG_HANDLE& hAlg, const std::vector<BYTE>& key, ChaningMode mode, const std::wstring& kdfAlgorithm, PBCryptBufferDesc kdfParameters /*= nullptr*/, WORD rounds /*= 128*/)
 	{
-		STATUS			  err		= std::make_shared<std::string>();
-		NTSTATUS		  nt_status = STATUS_UNSUCCESSFUL;
-		BCRYPT_ALG_HANDLE hKdf		= NULL;
+		STATUS err = std::make_shared<std::string>();
+		NTSTATUS nt_status = STATUS_UNSUCCESSFUL;
+		BCRYPT_ALG_HANDLE hKdf = NULL;
 		std::vector<BYTE> _key = key;
 
 		nt_status = BCryptOpenAlgorithmProvider(
@@ -342,12 +344,13 @@ namespace EasyBCrypt
 
 	std::variant<STATUS, std::vector<BYTE>> EasyBCrypt::Encrypt(BCRYPT_ALG_HANDLE hAlg, const std::vector<BYTE>& pbBlob, const std::vector<BYTE>& IV, const std::string& plaintext, std::vector<BYTE>* authTag)
 	{
-		STATUS					err		  = std::make_shared<std::string>();
-		NTSTATUS				nt_status = STATUS_UNSUCCESSFUL;
-		BCRYPT_KEY_HANDLE		hKey	  = NULL;
-		ULONG					ciphertextLen	 = 0;
-		ULONG					res				 = 0;
-		std::vector<BYTE>		encryptedData;
+		STATUS err = std::make_shared<std::string>();
+		NTSTATUS nt_status = STATUS_UNSUCCESSFUL;
+
+		BCRYPT_KEY_HANDLE hKey = NULL;
+		ULONG ciphertextLen = 0;
+		ULONG res = 0;
+		std::vector<BYTE> encryptedData;
 
 		// chaining mode buffer
 		WCHAR chainingMode[32] = { 0 };
@@ -439,15 +442,15 @@ namespace EasyBCrypt
 			BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO authInfo;
 			BCRYPT_INIT_AUTH_MODE_INFO(authInfo);
 
-			authInfo.pbNonce = _pbIV;			// pointer to the nonce
-			authInfo.cbNonce = _cbIV;			// the size of the nonce
+			authInfo.pbNonce = _pbIV; // pointer to the nonce
+			authInfo.cbNonce = _cbIV; // the size of the nonce
 
 			std::vector<BYTE>& _authTag = *authTag;
 			_authTag.clear();
 			_authTag.resize(authTagLengths.dwMinLength);
 
-			authInfo.pbTag = &_authTag[0];		// receive the auth tag when encrypting data
-			authInfo.cbTag = _authTag.size();	// the size of the buffer
+			authInfo.pbTag = &_authTag[0]; // receive the auth tag when encrypting data
+			authInfo.cbTag = _authTag.size(); // the size of the buffer
 
 
 			nt_status = BCryptEncrypt(hKey,
@@ -497,16 +500,16 @@ namespace EasyBCrypt
 			memcpy(pbCopyIV, _pbIV, _cbIV);
 
 			nt_status = BCryptEncrypt(
-				hKey,															// Handle to a key which is used to encrypt 
-				_pbPlaintext,													// Address of the buffer that contains the plaintext
-				_cbPlaintext,													// Size of the buffer in bytes
-				NULL,															// A pointer to padding info, used with asymmetric and authenticated encryption; else set to NULL
-				pbCopyIV,														// Address of the buffer that contains the IV. 
-				_cbIV,															// Size of the IV buffer in bytes
-				NULL,															// Address of the buffer the receives the ciphertext
-				0,																// Size of the buffer in bytes
-				&ciphertextLen,													// Variable that receives number of bytes copied to ciphertext buffer 
-				BCRYPT_BLOCK_PADDING);											// Flags; Block padding allows to pad data to the next block size
+				hKey,                 // Handle to a key which is used to encrypt 
+				_pbPlaintext,         // Address of the buffer that contains the plaintext
+				_cbPlaintext,         // Size of the buffer in bytes
+				NULL,                 // A pointer to padding info, used with asymmetric and authenticated encryption; else set to NULL
+				pbCopyIV,             // Address of the buffer that contains the IV. 
+				_cbIV,                // Size of the IV buffer in bytes
+				NULL,                 // Address of the buffer the receives the ciphertext
+				0,                    // Size of the buffer in bytes
+				&ciphertextLen,       // Variable that receives number of bytes copied to ciphertext buffer 
+				BCRYPT_BLOCK_PADDING);// Flags; Block padding allows to pad data to the next block size
 
 			if (not NT_SUCCESS(nt_status))
 			{
@@ -517,16 +520,16 @@ namespace EasyBCrypt
 			encryptedData.resize(ciphertextLen);
 
 			nt_status = BCryptEncrypt(
-				hKey,															// Handle to a key which is used to encrypt 
-				_pbPlaintext,													// Address of the buffer that contains the plaintext
-				_cbPlaintext,													// Size of the buffer in bytes
-				NULL,															// A pointer to padding info, used with asymmetric and authenticated encryption; else set to NULL
-				pbCopyIV,														// Address of the buffer that contains the IV. 
-				_cbIV,															// Size of the IV buffer in bytes
-				reinterpret_cast<PBYTE>(&encryptedData[0]),						// Address of the buffer the receives the ciphertext
-				ciphertextLen,													// Size of the buffer in bytes
-				&res,															// Variable that receives number of bytes copied to ciphertext buffer 
-				BCRYPT_BLOCK_PADDING);											// Flags; Block padding allows to pad data to the next block size
+				hKey,                                       // Handle to a key which is used to encrypt 
+				_pbPlaintext,                               // Address of the buffer that contains the plaintext
+				_cbPlaintext,                               // Size of the buffer in bytes
+				NULL,                                       // A pointer to padding info, used with asymmetric and authenticated encryption; else set to NULL
+				pbCopyIV,                                   // Address of the buffer that contains the IV. 
+				_cbIV,                                      // Size of the IV buffer in bytes
+				reinterpret_cast<PBYTE>(&encryptedData[0]), // Address of the buffer the receives the ciphertext
+				ciphertextLen,                              // Size of the buffer in bytes
+				&res,                                       // Variable that receives number of bytes copied to ciphertext buffer 
+				BCRYPT_BLOCK_PADDING);                      // Flags; Block padding allows to pad data to the next block size
 
 			if (not NT_SUCCESS(nt_status))
 			{
@@ -538,16 +541,16 @@ namespace EasyBCrypt
 		else
 		{
 			nt_status = BCryptEncrypt(
-				hKey,															// Handle to a key which is used to encrypt 
-				_pbPlaintext,													// Address of the buffer that contains the plaintext
-				_cbPlaintext,													// Size of the buffer in bytes
-				NULL,															// A pointer to padding info, used with asymmetric and authenticated encryption; else set to NULL
-				NULL,															// Address of the buffer that contains the IV. 
-				0,																// Size of the IV buffer in bytes
-				NULL,															// Address of the buffer the receives the ciphertext
-				0,																// Size of the buffer in bytes
-				&ciphertextLen,													// Variable that receives number of bytes copied to ciphertext buffer 
-				BCRYPT_BLOCK_PADDING);											// Flags; Block padding allows to pad data to the next block size
+				hKey,                   // Handle to a key which is used to encrypt 
+				_pbPlaintext,           // Address of the buffer that contains the plaintext
+				_cbPlaintext,           // Size of the buffer in bytes
+				NULL,                   // A pointer to padding info, used with asymmetric and authenticated encryption; else set to NULL
+				NULL,                   // Address of the buffer that contains the IV. 
+				0,                      // Size of the IV buffer in bytes
+				NULL,                   // Address of the buffer the receives the ciphertext
+				0,                      // Size of the buffer in bytes
+				&ciphertextLen,         // Variable that receives number of bytes copied to ciphertext buffer 
+				BCRYPT_BLOCK_PADDING);  // Flags; Block padding allows to pad data to the next block size
 
 			if (not NT_SUCCESS(nt_status))
 			{
@@ -589,12 +592,13 @@ namespace EasyBCrypt
 
 	std::variant<STATUS, std::string> EasyBCrypt::Decrypt(BCRYPT_ALG_HANDLE hAlg, const std::vector<BYTE>& pbBlob, const std::vector<BYTE>& IV, const std::vector<BYTE>& ciphertext, std::vector<BYTE>* authTag)
 	{
-		STATUS					err		   = std::make_shared<std::string>();
-		NTSTATUS				nt_status  = STATUS_UNSUCCESSFUL;
-		BCRYPT_KEY_HANDLE		hKey	   = NULL;
-		ULONG					plaintextLength = 0;
-		ULONG					res				= 0;
-		std::string				decryptedData;
+		STATUS err = std::make_shared<std::string>();
+		NTSTATUS nt_status = STATUS_UNSUCCESSFUL;
+
+		BCRYPT_KEY_HANDLE hKey = NULL;
+		ULONG plaintextLength = 0;
+		ULONG res = 0;
+		std::string	decryptedData;
 
 		// chaining mode buffer
 		WCHAR chainingMode[32] = { 0 };
@@ -672,13 +676,13 @@ namespace EasyBCrypt
 			BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO authInfo;
 			BCRYPT_INIT_AUTH_MODE_INFO(authInfo);
 
-			authInfo.pbNonce = _pbIV;			// pointer to the nonce
-			authInfo.cbNonce = _cbIV;			// the size of the nonce
+			authInfo.pbNonce = _pbIV; // pointer to the nonce
+			authInfo.cbNonce = _cbIV; // the size of the nonce
 
 			std::vector<BYTE>& _authTag = *authTag;
 
-			authInfo.pbTag = &_authTag[0];		// receive the auth tag when encrypting data
-			authInfo.cbTag = _authTag.size();	// the size of the buffer
+			authInfo.pbTag = &_authTag[0]; // receive the auth tag when encrypting data
+			authInfo.cbTag = _authTag.size(); // the size of the buffer
 
 			nt_status = BCryptDecrypt(
 				hKey,
@@ -728,15 +732,15 @@ namespace EasyBCrypt
 			memcpy(pbCopyIV, _pbIV, _cbIV);
 
 			nt_status = BCryptDecrypt(
-				hKey,													// Handle to a key which is used to encrypt 
-				_pbCiphertext,											// Address of the buffer that contains the ciphertext
-				_cbCiphertext,											// Size of the buffer in bytes
-				NULL,													// A pointer to padding info, used with asymmetric and authenticated encryption; else set to NULL
-				pbCopyIV,												// Address of the buffer that contains the IV. 
-				_cbIV,													// Size of the IV buffer in bytes
-				NULL,													// Address of the buffer the recieves the plaintext
-				0,														// Size of the buffer in bytes
-				&plaintextLength,										// Variable that recieves number of bytes copied to plaintext buffer 
+				hKey,                  // Handle to a key which is used to encrypt 
+				_pbCiphertext,         // Address of the buffer that contains the ciphertext
+				_cbCiphertext,         // Size of the buffer in bytes
+				NULL,                  // A pointer to padding info, used with asymmetric and authenticated encryption; else set to NULL
+				pbCopyIV,              // Address of the buffer that contains the IV. 
+				_cbIV,                 // Size of the IV buffer in bytes
+				NULL,                  // Address of the buffer the recieves the plaintext
+				0,                     // Size of the buffer in bytes
+				&plaintextLength,      // Variable that recieves number of bytes copied to plaintext buffer 
 				BCRYPT_BLOCK_PADDING);
 
 			if (not NT_SUCCESS(nt_status))
@@ -748,15 +752,15 @@ namespace EasyBCrypt
 			decryptedData.resize(plaintextLength);
 
 			nt_status = BCryptDecrypt(
-				hKey,													// Handle to a key which is used to encrypt 
-				_pbCiphertext,											// Address of the buffer that contains the ciphertext
-				_cbCiphertext,											// Size of the buffer in bytes
-				NULL,													// A pointer to padding info, used with asymmetric and authenticated encryption; else set to NULL
-				pbCopyIV,												// Address of the buffer that contains the IV. 
-				_cbIV,													// Size of the IV buffer in bytes
-				reinterpret_cast<PBYTE>(&decryptedData[0]),				// Address of the buffer the receives the plaintext
-				plaintextLength,										// Size of the buffer in bytes
-				&res,													// Variable that receives number of bytes copied to plaintext buffer 
+				hKey,                                       // Handle to a key which is used to encrypt 
+				_pbCiphertext,                              // Address of the buffer that contains the ciphertext
+				_cbCiphertext,                              // Size of the buffer in bytes
+				NULL,                                       // A pointer to padding info, used with asymmetric and authenticated encryption; else set to NULL
+				pbCopyIV,                                   // Address of the buffer that contains the IV. 
+				_cbIV,                                      // Size of the IV buffer in bytes
+				reinterpret_cast<PBYTE>(&decryptedData[0]), // Address of the buffer the receives the plaintext
+				plaintextLength,                            // Size of the buffer in bytes
+				&res,                                       // Variable that receives number of bytes copied to plaintext buffer 
 				BCRYPT_BLOCK_PADDING);
 
 			if (not NT_SUCCESS(nt_status))
@@ -889,8 +893,9 @@ namespace EasyBCrypt
 
 	std::variant<STATUS, std::vector<BYTE>> EasyBCrypt::GenerateDHKeyPair(std::shared_ptr<BYTE[]> dhParams, BCRYPT_ALG_HANDLE& exchAlgHandle, BCRYPT_KEY_HANDLE& dhKeyHandle)
 	{
-		STATUS err		   = std::make_shared<std::string>();
+		STATUS err = std::make_shared<std::string>();
 		NTSTATUS nt_status = STATUS_UNSUCCESSFUL;
+
 		DWORD keyLength  = reinterpret_cast<BCRYPT_DH_PARAMETER_HEADER*>(dhParams.get())->cbKeyLength * 8;
 		DWORD pubBlobLen = 0;
 		std::vector<BYTE> pubBlob;
@@ -909,7 +914,7 @@ namespace EasyBCrypt
 
 		nt_status = BCryptGenerateKeyPair(
 			exchAlgHandle,              // Algorithm handle
-			&dhKeyHandle,				// Key handle - will be created
+			&dhKeyHandle,               // Key handle - will be created
 			keyLength,                  // Length of the key - in bits
 			0);                         // Flags
 
@@ -933,8 +938,8 @@ namespace EasyBCrypt
 		}
 
 		nt_status = BCryptFinalizeKeyPair(
-			dhKeyHandle,             // Key handle
-			0);                         // Flags
+			dhKeyHandle,                 // Key handle
+			0);                          // Flags
 
 		if (not NT_SUCCESS(nt_status))
 		{
@@ -943,13 +948,13 @@ namespace EasyBCrypt
 		}
 
 		nt_status = BCryptExportKey(
-			dhKeyHandle,				// Handle of the key to export
-			NULL,                       // Handle of the key used to wrap the exported key
-			BCRYPT_DH_PUBLIC_BLOB,      // Blob type (null terminated unicode string)
-			NULL,                       // Buffer that receives the key blob
-			0,                          // Buffer length (in bytes)
-			&pubBlobLen,				// Number of bytes copied to the buffer
-			0);                         // Flags
+			dhKeyHandle,               // Handle of the key to export
+			NULL,                      // Handle of the key used to wrap the exported key
+			BCRYPT_DH_PUBLIC_BLOB,     // Blob type (null terminated unicode string)
+			NULL,                      // Buffer that receives the key blob
+			0,                         // Buffer length (in bytes)
+			&pubBlobLen,               // Number of bytes copied to the buffer
+			0);                        // Flags
 
 		if (not NT_SUCCESS(nt_status))
 		{
@@ -960,13 +965,13 @@ namespace EasyBCrypt
 		pubBlob.resize(pubBlobLen);
 
 		nt_status = BCryptExportKey(
-			dhKeyHandle,				// Handle of the key to export
-			NULL,                       // Handle of the key used to wrap the exported key
-			BCRYPT_DH_PUBLIC_BLOB,      // Blob type (null terminated unicode string)
-			pubBlob.data(),             // Buffer that receives the key blob
-			pubBlobLen,					// Buffer length (in bytes)
-			&pubBlobLen,				// Number of bytes copied to the buffer
-			0);                         // Flags
+			dhKeyHandle,               // Handle of the key to export
+			NULL,                      // Handle of the key used to wrap the exported key
+			BCRYPT_DH_PUBLIC_BLOB,     // Blob type (null terminated unicode string)
+			&pubBlob[0],               // Buffer that receives the key blob
+			pubBlobLen,                // Buffer length (in bytes)
+			&pubBlobLen,               // Number of bytes copied to the buffer
+			0);                        // Flags
 
 		if (not NT_SUCCESS(nt_status))
 		{
@@ -992,21 +997,22 @@ namespace EasyBCrypt
 
 	std::variant<STATUS, std::vector<BYTE>> EasyBCrypt::GenerateDHSecret(BCRYPT_ALG_HANDLE exchAlgHandle, BCRYPT_KEY_HANDLE dhKeyHandle, std::vector<BYTE>& alicePubBlob, const std::wstring& pwszKDF, PBCryptBufferDesc kdfParameters /*= nullptr*/)
 	{
-		STATUS err		   = std::make_shared<std::string>();
+		STATUS err = std::make_shared<std::string>();
 		NTSTATUS nt_status = STATUS_UNSUCCESSFUL;
-		BCRYPT_KEY_HANDLE PubKeyHandleA		 = NULL;
+
+		BCRYPT_KEY_HANDLE PubKeyHandleA = NULL;
 		BCRYPT_SECRET_HANDLE secretAgreement = NULL;
 		std::vector<BYTE> secret;
 		DWORD secrentLength = 0;
 
 		nt_status = BCryptImportKeyPair(
-			exchAlgHandle,										// Alg handle
-			NULL,												// Parameter not used
-			BCRYPT_DH_PUBLIC_BLOB,								// Blob type (Null terminated unicode string)
-			&PubKeyHandleA,										// Key handle that will be recieved
-			&alicePubBlob[0],								// Buffer than points to the key blob
-			static_cast<ULONG>(alicePubBlob.size()),			// Buffer length in bytes
-			0);													// Flags
+			exchAlgHandle,               // Alg handle
+			NULL,                        // Parameter not used
+			BCRYPT_DH_PUBLIC_BLOB,       // Blob type (Null terminated unicode string)
+			&PubKeyHandleA,              // Key handle that will be recieved
+			&alicePubBlob[0],            // Buffer than points to the key blob
+			static_cast<ULONG>(alicePubBlob.size()), // Buffer length in bytes
+			0);                          // Flags
 
 		if (not NT_SUCCESS(nt_status))
 		{
@@ -1025,9 +1031,9 @@ namespace EasyBCrypt
 		}
 
 		nt_status = BCryptSecretAgreement(
-			dhKeyHandle,                // Private key handle
-			PubKeyHandleA,              // Public key handle
-			&secretAgreement,			// Handle that represents the secret agreement value
+			dhKeyHandle,          // Private key handle
+			PubKeyHandleA,        // Public key handle
+			&secretAgreement,     // Handle that represents the secret agreement value
 			0);
 
 		if (not NT_SUCCESS(nt_status))
@@ -1037,13 +1043,13 @@ namespace EasyBCrypt
 		}
 
 		nt_status = BCryptDeriveKey(
-			secretAgreement,		     // Secret agreement handle
-			pwszKDF.data(),				 // Key derivation function (null terminated unicode string)
-			kdfParameters,				 // KDF parameters
-			NULL,                        // Buffer that recieves the derived key 
-			0,                           // Length of the buffer
-			&secrentLength,				 // Number of bytes copied to the buffer
-			0);                          // Flags
+			secretAgreement,       // Secret agreement handle
+			&pwszKDF[0],           // Key derivation function (null terminated unicode string)
+			kdfParameters,         // KDF parameters
+			NULL,                  // Buffer that recieves the derived key 
+			0,                     // Length of the buffer
+			&secrentLength,        // Number of bytes copied to the buffer
+			0);                    // Flags
 
 		if (not NT_SUCCESS(nt_status))
 		{
@@ -1055,12 +1061,12 @@ namespace EasyBCrypt
 		secret.resize(secrentLength);
 
 		nt_status = BCryptDeriveKey(
-			secretAgreement,			 // Secret agreement handle
-			pwszKDF.data(),				 // Key derivation function (null terminated unicode string)
-			kdfParameters,               // KDF parameters
-			secret.data(),               // Buffer that receives the derived key 
-			secrentLength,				 // Length of the buffer
-			&secrentLength,				 // Number of bytes copied to the buffer
+			secretAgreement,      // Secret agreement handle
+			&pwszKDF[0],          // Key derivation function (null terminated unicode string)
+			kdfParameters,        // KDF parameters
+			&secret[0],           // Buffer that receives the derived key 
+			secrentLength,        // Length of the buffer
+			&secrentLength,       // Number of bytes copied to the buffer
 			0);
 
 		{
