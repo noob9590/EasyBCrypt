@@ -35,3 +35,13 @@
 .vs
 .git
 x64
+Debug
+ClientExample
+ServerExample
+
+# files
+ClassExample.cpp
+DHExample.cpp
+Example.cpp
+ExampleAESGCM.cpp
+ServerExample.cpp

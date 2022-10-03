@@ -1,5 +1,6 @@
 //#include <iostream>
-//#include "EBcrypt.h"
+//#include "EasyBCrypt.h"
+//#include <format>
 //#include <fstream>
 //#include <sstream>
 //#include <stdexcept>
@@ -56,19 +57,6 @@
 //
 //AESCipher::AESCipher(std::vector<BYTE> key, const std::wstring& chainingMode)
 //{
-//	BCRYPT_ALG_HANDLE hKdf;
-//
-//	if (not NT_SUCCESS(BCryptOpenAlgorithmProvider(&hAlg, BCRYPT_AES_ALGORITHM, NULL, 0)))
-//	{
-//		throw std::runtime_error("BcryptOpenAlgorithmProvider Error");
-//	}
-//
-//	if (not NT_SUCCESS(BCryptOpenAlgorithmProvider(&hKdf, BCRYPT_CAPI_KDF_ALGORITHM, NULL, 0)))
-//	{
-//		throw std::runtime_error("BcryptOpenAlgorithmProvider Error");
-//		BCryptCloseAlgorithmProvider(hAlg, 0);
-//	}
-//
 //	BCryptBuffer CAPIParameterBuffers[] = {
 //							{
 //								sizeof(BCRYPT_SHA256_ALGORITHM),
@@ -83,40 +71,15 @@
 //										CAPIParameterBuffers
 //	};
 //
-//	auto optDerivedKey = EasyBCrypt::KeyFromDerivation(hKdf, key, CAPIParameters);
-//	if (not optDerivedKey)
-//	{
-//		BCryptCloseAlgorithmProvider(hAlg, 0);
-//		BCryptCloseAlgorithmProvider(hKdf, 0);
-//		throw std::runtime_error("KeyFromDerivation Error");
-//	}
-//
-//	std::vector<BYTE>dKey = std::move(*optDerivedKey);
-//
-//	auto optIV = EasyBCrypt::GenerateIV(hAlg);
-//	if (not optIV)
-//	{
-//		BCryptCloseAlgorithmProvider(hAlg, 0);
-//		BCryptCloseAlgorithmProvider(hKdf, 0);
-//		throw std::runtime_error("GenerateIV Error");
-//	}
-//
-//	IV = std::move(*optIV);
-//
-//	auto optPbBlob = EasyBCrypt::GenerateKeyBlob(hAlg, dKey, chainingMode);
-//	if (not optPbBlob)
-//	{
-//		BCryptCloseAlgorithmProvider(hAlg, 0);
-//		BCryptCloseAlgorithmProvider(hKdf, 0);
-//		throw std::runtime_error("KeyFromDerivation Error");
-//	}
-//
-//	pbBlob = std::move(*optPbBlob);
-//
-//	if (chainingMode == BCRYPT_CHAIN_MODE_CCM or chainingMode == BCRYPT_CHAIN_MODE_GCM)
+//	// determine if padding is needed according to msdn
+//	if (chainingMode != BCRYPT_CHAIN_MODE_CBC or chainingMode != BCRYPT_CHAIN_MODE_CFB)
 //		usePadding = false;
 //
-//	BCryptCloseAlgorithmProvider(hKdf, 0);
+//	auto optAESBlob = EasyBCrypt::CreateAESKeyBlob(hAlg, key, chainingMode, BCRYPT_CAPI_KDF_ALGORITHM, &CAPIParameters);
+//	if (auto out = std::get_if<std::vector<BYTE>>(&optAESBlob))
+//		pbBlob = std::move(*out);
+//	else
+//		throw std::runtime_error(std::format("Error returned from CreateAESKeyBlob: {:#X}", std::get<NTSTATUS>(optAESBlob)));
 //
 //}
 //
@@ -134,18 +97,24 @@
 //std::string AESCipher::Encrypt64(const std::string& plaintText)
 //{
 //	auto optEncryption64 = EasyBCrypt::Encrypt64(hAlg, pbBlob, IV, plaintText, usePadding);
-//	if (not optEncryption64)
-//		return "";
-//	return optEncryption64.value();
+//	
+//	if (auto out = std::get_if<std::string>(&optEncryption64))
+//		return *out;
+//
+//	NTSTATUS status = std::get<NTSTATUS>(optEncryption64);
+//	return std::format("Error status: {:#X}", status);
 //}
 //
 //
 //std::string AESCipher::Decrypt64(const std::string& cipherText)
 //{
 //	auto optDecryption64 = EasyBCrypt::Decrypt64(hAlg, pbBlob, IV, cipherText, usePadding);
-//	if (not optDecryption64)
-//		return "";
-//	return optDecryption64.value();
+//
+//	if (auto out = std::get_if<std::string>(&optDecryption64))
+//		return *out;
+//
+//	NTSTATUS status = std::get<NTSTATUS>(optDecryption64);
+//	return std::format("Error status: {:#X}", status);
 //}
 //
 //#pragma comment(lib, "ntdll")

@@ -35,5 +35,11 @@
     <ClCompile Include="ClassExample.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DHExample.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ExampleAESGCM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
