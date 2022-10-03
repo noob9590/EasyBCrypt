@@ -136,9 +136,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="base64.cpp" />
-    <ClCompile Include="DHExample.cpp" />
     <ClCompile Include="EasyBCrypt.cpp" />
-    <ClCompile Include="ExampleAESGCM.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

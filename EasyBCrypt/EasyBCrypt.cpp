@@ -5,14 +5,12 @@ namespace EasyBCrypt
 	std::optional<std::vector<BYTE>> EasyBCrypt::Hash(PBYTE bytes, DWORD dwSize)
 	{
 		;
-		BCRYPT_ALG_HANDLE		hAlgHash;
-		BCRYPT_HASH_HANDLE      hHash = NULL;
-		NTSTATUS                status = STATUS_UNSUCCESSFUL;
-		DWORD                   cbData = 0,
-			cbHash = 0,
-			cbHashObject = 0;
+		BCRYPT_ALG_HANDLE hAlgHash;
+		BCRYPT_HASH_HANDLE hHash = NULL;
+		NTSTATUS status = STATUS_UNSUCCESSFUL;
+		DWORD cbData = 0, cbHash = 0, cbHashObject = 0;
 		std::unique_ptr<BYTE[]> pbHashObject = NULL;
-		std::vector<BYTE>		pbHashOut;
+		std::vector<BYTE> pbHashOut;
 
 		// Open an algorithm handle.
 		if (!NT_SUCCESS(BCryptOpenAlgorithmProvider(
